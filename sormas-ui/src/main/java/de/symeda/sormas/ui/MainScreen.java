@@ -85,6 +85,7 @@ import de.symeda.sormas.ui.immunization.ImmunizationsView;
 import de.symeda.sormas.ui.labmessage.LabMessagesView;
 import de.symeda.sormas.ui.login.LoginHelper;
 import de.symeda.sormas.ui.person.PersonsView;
+import de.symeda.sormas.ui.report.CampaignReportView;
 import de.symeda.sormas.ui.reports.ReportsView;
 import de.symeda.sormas.ui.reports.aggregate.AggregateReportsView;
 import de.symeda.sormas.ui.samples.SamplesView;
@@ -219,11 +220,13 @@ public class MainScreen extends HorizontalLayout {
 			AbstractCampaignView.registerViews(navigator);
 			menu.addView(CampaignDataView.class, AbstractCampaignView.ROOT_VIEW_NAME,
 					I18nProperties.getCaption(Captions.mainMenuCampaigns), VaadinIcons.CLIPBOARD_CHECK);
-		}
+		
 
-		// menu.addView(CampaignGisView.class, CampaignGisView.VIEW_NAME,
-		// I18nProperties.getCaption("GIS"),
-		// VaadinIcons.MAP_MARKER);
+		 menu.addView(CampaignReportView.class, CampaignReportView.VIEW_NAME,
+		 I18nProperties.getCaption("Report"),
+		 VaadinIcons.CHART);
+			
+		}
 
 		if (permitted(FeatureType.WEEKLY_REPORTING, UserRight.WEEKLYREPORT_VIEW)) {
 			menu.addView(ReportsView.class, ReportsView.VIEW_NAME, I18nProperties.getCaption(Captions.mainMenuReports),

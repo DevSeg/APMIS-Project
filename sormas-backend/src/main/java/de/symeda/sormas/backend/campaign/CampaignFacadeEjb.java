@@ -28,9 +28,6 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.vladmihalcea.hibernate.type.util.SQLExtractor;
-
-import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.campaign.CampaignCriteria;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignFacade;
@@ -38,7 +35,6 @@ import de.symeda.sormas.api.campaign.CampaignIndexDto;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.diagram.CampaignDashboardElement;
 import de.symeda.sormas.api.campaign.diagram.CampaignDiagramDefinitionDto;
-import de.symeda.sormas.api.campaign.diagram.CampaignDiagramDefinitionFacade;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
@@ -47,7 +43,6 @@ import de.symeda.sormas.api.user.UserRight;
 import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.utils.SortProperty;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
-import de.symeda.sormas.backend.campaign.diagram.CampaignDiagramDefinition;
 import de.symeda.sormas.backend.campaign.diagram.CampaignDiagramDefinitionFacadeEjb;
 import de.symeda.sormas.backend.campaign.form.CampaignFormMetaService;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
@@ -142,7 +137,7 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		query.where(cb.and(campaignService.createActiveCampaignsFilter(cb, from), cb.lessThanOrEqualTo(from.get(Campaign.START_DATE), new Date())));
 		query.orderBy(cb.desc(from.get(Campaign.START_DATE)));
 		
-	//	System.out.println(new Date() + " DEBUGGER r567ujhgty8ijyu8dfrf  "+SQLExtractor.from(em.createQuery(query)));
+	//	//System.out.println(new Date() + " DEBUGGER r567ujhgty8ijyu8dfrf  "+SQLExtractor.from(em.createQuery(query)));
 		
 		final TypedQuery<Campaign> q = em.createQuery(query);
 		final Campaign lastStartedCampaign = q.getResultList().stream().findFirst().orElse(null);
@@ -386,7 +381,7 @@ public class CampaignFacadeEjb implements CampaignFacade {
 
 		CampaignDto target = new CampaignDto();
 		DtoHelper.fillDto(target, source);
-		//System.out.println("++++++++++++++++ "+UserFacadeEjb.toReferenceDto(source.getCreatingUser()));
+		////System.out.println("++++++++++++++++ "+UserFacadeEjb.toReferenceDto(source.getCreatingUser()));
 		target.setCreatingUser(UserFacadeEjb.toReferenceDto(source.getCreatingUser()));
 		target.setDescription(source.getDescription());
 		target.setEndDate(source.getEndDate());
@@ -404,7 +399,7 @@ public class CampaignFacadeEjb implements CampaignFacade {
 
 	@Override
 	public CampaignDto getByUuid(String uuid) {
-		//System.out.println("dddddddddddddddddddddddddddd111111111111111111111112222222222222222222222222");
+		////System.out.println("dddddddddddddddddddddddddddd111111111111111111111112222222222222222222222222");
 		return toDto(campaignService.getByUuid(uuid));
 	}
 
@@ -413,7 +408,7 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		
 		final List<CampaignDashboardElement> result = new ArrayList<>();
 		if (campaignUuid != null && formType != null) {
-		//	System.out.println("dddddddddddddddddddddddddddd111111111111111111111112222222222222222222222222 "+formType);
+		//	//System.out.println("dddddddddddddddddddddddddddd111111111111111111111112222222222222222222222222 "+formType);
 			final Campaign campaign = campaignService.getByUuid(campaignUuid);
 			
 			final List<CampaignDashboardElement> dashboardElements = campaign.getDashboardElements();
@@ -435,23 +430,23 @@ public class CampaignFacadeEjb implements CampaignFacade {
 				final List<CampaignDiagramDefinitionDto> campaignDiagramDefinitionDto_s = campaignDiagramDefinitionFacade.getAll();
 				
 				List<CampaignDashboardElement> dashboardElementsx = campaign.getDashboardElements();//.stream().filter(e -> e.getPhase() != null).collect(Collectors.toList());
-			//	System.out.println(campaignDiagramDefinitionDto_s+" +++++++++++++++++++++++++=============== "+formType);
+			//	//System.out.println(campaignDiagramDefinitionDto_s+" +++++++++++++++++++++++++=============== "+formType);
 				
 				CampaignDashboardElement campaignDashboardElement = new CampaignDashboardElement();
 				
 				List<CampaignDashboardElement> dashboardElements = new ArrayList();
 				
 				
-			//	System.out.println(formType+" +++++++++++++++++++++++"+ campaignDiagramDefinitionDto_s.stream().filter(e -> e.getFormType().equalsIgnoreCase(formType)).collect(Collectors.toList()));
+			//	//System.out.println(formType+" +++++++++++++++++++++++"+ campaignDiagramDefinitionDto_s.stream().filter(e -> e.getFormType().equalsIgnoreCase(formType)).collect(Collectors.toList()));
 			
 				final List<CampaignDiagramDefinitionDto> campaignDiagramDefinitionDtos = campaignDiagramDefinitionDto_s.stream().filter(e -> e.getFormType().equalsIgnoreCase(formType)).collect(Collectors.toList());
 				
 				
-			//	System.out.println(formType+" +++++++++++++++++++++++++====================== bbb	=========== "+campaignDiagramDefinitionDtos);
+			//	//System.out.println(formType+" +++++++++++++++++++++++++====================== bbb	=========== "+campaignDiagramDefinitionDtos);
 				
 				 for (int i = 0; i < campaignDiagramDefinitionDtos.size(); i++){
 					 
-				//	 System.out.println("++++++++++++++++0000000 "+campaignDiagramDefinitionDtos.get(i).getFormType());
+				//	 //System.out.println("++++++++++++++++0000000 "+campaignDiagramDefinitionDtos.get(i).getFormType());
 					 
 					 campaignDashboardElement.setDiagramId(campaignDiagramDefinitionDtos.get(i).getDiagramId());
 					 campaignDashboardElement.setPhase(campaignDiagramDefinitionDtos.get(i).getFormType());
@@ -529,9 +524,10 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		String cdvv = "select openandclose from campaigns where uuid = '"+uuid+"' and openandclose = false";
 	
 		List count = em.createNativeQuery(cdvv).getResultList();  
-		System.out.println(cdvv +"  ++++++++++++++++   "+count.size());
+		//System.out.println(cdvv +"  ++++++++++++++++   "+count.size());
 		return count.size() > 0;
 	}
+	
 
 	@Override
 	public void deleteCampaign(String campaignUuid) {
@@ -633,6 +629,7 @@ public class CampaignFacadeEjb implements CampaignFacade {
 	public static class CampaignFacadeEjbLocal extends CampaignFacadeEjb {
 	}
 
+	
 
 
 	
