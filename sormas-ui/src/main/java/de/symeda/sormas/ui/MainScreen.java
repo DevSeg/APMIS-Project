@@ -118,8 +118,7 @@ public class MainScreen extends HorizontalLayout {
 		CssLayout viewContainer = new CssLayout();
 		viewContainer.setSizeFull();
 		viewContainer.addStyleName("sormas-content");
-		viewContainer.setId("sormas-oya");
-		
+		viewContainer.setId("sormas-oya");	
 
 		final Navigator navigator = new Navigator(ui, viewContainer);
 		navigator.setErrorProvider(new ViewProvider() {
@@ -153,7 +152,8 @@ public class MainScreen extends HorizontalLayout {
 		} else if (permitted(FeatureType.CONTACT_TRACING, UserRight.DASHBOARD_CONTACT_ACCESS)) {
 			menu.addView(ContactsDashboardView.class, AbstractDashboardView.ROOT_VIEW_NAME,
 					I18nProperties.getCaption(Captions.mainMenuDashboard), VaadinIcons.DASHBOARD);
-		} else if (permitted(FeatureType.CAMPAIGNS, UserRight.DASHBOARD_CAMPAIGNS_ACCESS)) {
+		} 
+		else if (permitted(FeatureType.CAMPAIGNS, UserRight.DASHBOARD_CAMPAIGNS_ACCESS)) {
 			menu.addView(CampaignDashboardView.class, AbstractDashboardView.ROOT_VIEW_NAME,
 					I18nProperties.getCaption(Captions.mainMenuDashboard), VaadinIcons.GRID_SMALL_O);
 
@@ -237,8 +237,14 @@ public class MainScreen extends HorizontalLayout {
 			menu.addView(StatisticsView.class, AbstractStatisticsView.ROOT_VIEW_NAME,
 					I18nProperties.getCaption(Captions.mainMenuStatistics), VaadinIcons.BAR_CHART);
 		}
+		
+		
+		
 		if (permitted(UserRight.CONFIGURATION_ACCESS)) {
-			if ((permitted(UserType.WHO_USER) ||  permitted(UserType.EOC_USER)) && permitted(UserRole.ADMIN)) {
+			
+			if (UserProvider.getCurrent().hasUserRight(UserRight.CAMPAIGN_EDIT)  && (UserProvider.getCurrent().hasUserRole(UserRole.ADMIN_NATIONAL_USER) && UserProvider.getCurrent().hasUserRole(UserRole.ADMIN))) {
+				
+			}else if ((permitted(UserType.WHO_USER) ||  permitted(UserType.EOC_USER)) && permitted(UserRole.ADMIN)) {
 				AbstractConfigurationView.registerViews(navigator);
 				menu.addView(
 						FacadeProvider.getFeatureConfigurationFacade().isFeatureEnabled(FeatureType.OUTBREAKS)
@@ -248,11 +254,16 @@ public class MainScreen extends HorizontalLayout {
 						I18nProperties.getCaption(Captions.mainMenuConfiguration), VaadinIcons.COG_O);
 			}
 		}
-		if (permitted(UserRight.USER_VIEW)) {
-			if (permitted(UserType.WHO_USER) ||  permitted(UserType.EOC_USER) && permitted(UserRole.ADMIN)) {
-			menu.addView(UsersView.class, UsersView.VIEW_NAME, I18nProperties.getCaption(Captions.mainMenuUsers),
-					VaadinIcons.USERS);}
-		}
+		
+		
+		
+		
+		
+		if ((permitted(UserRole.ADMIN) || permitted(UserRole.AREA_ADMIN_SUPERVISOR) || permitted(UserRole.ADMIN_SUPERVISOR))) {
+					menu.addView(UsersView.class, UsersView.VIEW_NAME, I18nProperties.getCaption(Captions.mainMenuUsers),
+							VaadinIcons.USERS);
+					}
+				
 
 		menu.createViewButtonx(Captions.actionSettings, I18nProperties.getCaption(Captions.language),
 				VaadinIcons.GLOBE_WIRE);

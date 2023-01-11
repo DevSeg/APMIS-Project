@@ -38,6 +38,7 @@ public enum UserRole
 	StatisticsGroupingKey {
 
 	ADMIN(false, false, false, false, JurisdictionLevel.NATION),
+	ADMIN_NATIONAL_USER(false, false, false, false, JurisdictionLevel.NONE),
 	NATIONAL_USER(false, false, false, false, JurisdictionLevel.NATION),
 	NATIONAL_OBSERVER(false, false, false, false, JurisdictionLevel.NATION),
 	POE_NATIONAL_USER(false, false, false, true, JurisdictionLevel.NATION),
@@ -70,7 +71,7 @@ public enum UserRole
 	//REST_EXTERNAL_VISITS_USER(false, false, false, true, JurisdictionLevel.NATION),;
 	
 	
-
+//clusterno1
 	/*
 	 * Hint for SonarQube issues:
 	 * 1. java:S115: Violation of name convention for String constants of this class is accepted: Close as false positive.
@@ -79,6 +80,7 @@ public enum UserRole
 	public static final String _SYSTEM = "SYSTEM";
 	public static final String _USER = "USER";
 	public static final String _ADMIN = ADMIN.name();
+	public static final String _ADMIN_NATIONAL_USER = ADMIN_NATIONAL_USER.name();
 	public static final String _NATIONAL_USER = NATIONAL_USER.name();
 	public static final String _SURVEILLANCE_SUPERVISOR = SURVEILLANCE_SUPERVISOR.name();
 	public static final String _SURVEILLANCE_OFFICER = SURVEILLANCE_OFFICER.name();
@@ -97,7 +99,7 @@ public enum UserRole
 	public static final String _POE_INFORMANT = POE_INFORMANT.name();
 	public static final String _POE_SUPERVISOR = POE_SUPERVISOR.name();
 	public static final String _POE_NATIONAL_USER = POE_NATIONAL_USER.name();
-	public static final String _IMPORT_USER = "";
+	//public static final String _IMPORT_USER = "";
 	public static final String _REST_EXTERNAL_VISITS_USER = "";
 	public static final String _REST_USER = REST_USER.name();
 	public static final String _SORMAS_TO_SORMAS_CLIENT = "";
@@ -175,6 +177,28 @@ public enum UserRole
 			for (UserRole role : UserRole.values()) {
 				collection.add(role);
 			}
+			break;
+		case ADMIN_NATIONAL_USER:
+			collection.add(SURVEILLANCE_SUPERVISOR);
+			collection.add(AREA_SURVEILLANCE_SUPERVISOR);
+			collection.add(CASE_SUPERVISOR);
+			collection.add(CONTACT_SUPERVISOR);
+			collection.add(CASE_OFFICER);
+			collection.add(CONTACT_OFFICER);
+			collection.add(SURVEILLANCE_OFFICER);
+			collection.add(LAB_USER);
+			collection.add(NATIONAL_OBSERVER);
+			collection.add(STATE_OBSERVER);
+			
+			collection.add(DISTRICT_OBSERVER);
+			collection.add(NATIONAL_CLINICIAN);
+			collection.add(POE_INFORMANT);
+			collection.add(POE_SUPERVISOR);
+			collection.add(POE_NATIONAL_USER);
+			
+			collection.add(AREA_STATE_OBSERVER);
+			collection.add(NATIONAL_USER);
+			
 			break;
 		case NATIONAL_USER:
 			collection.add(SURVEILLANCE_SUPERVISOR);

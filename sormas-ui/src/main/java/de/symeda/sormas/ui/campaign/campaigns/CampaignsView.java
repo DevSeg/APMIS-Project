@@ -33,6 +33,7 @@ import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
 import de.symeda.sormas.api.user.UserRight;
+import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.ui.ControllerProvider;
 import de.symeda.sormas.ui.UserProvider;
 import de.symeda.sormas.ui.ViewModelProviders;
@@ -78,7 +79,10 @@ public class CampaignsView extends AbstractCampaignView {
 
 		addComponent(gridLayout);
 
-		if (UserProvider.getCurrent().hasUserRight(UserRight.CAMPAIGN_EDIT)) {
+		if (UserProvider.getCurrent().hasUserRight(UserRight.CAMPAIGN_EDIT)  && (UserProvider.getCurrent().hasUserRole(UserRole.ADMIN_NATIONAL_USER) && UserProvider.getCurrent().hasUserRole(UserRole.ADMIN))) {
+		
+		}
+		else if(UserProvider.getCurrent().hasUserRight(UserRight.CAMPAIGN_EDIT)){
 			validateFormsButton = ButtonHelper.createIconButton(Captions.campaignValidateForms, VaadinIcons.CHECK_CIRCLE, e -> {
 				FacadeProvider.getCampaignFormMetaFacade().validateAllFormMetas();
 				Notification.show(I18nProperties.getString(Strings.messageAllCampaignFormsValid), Type.TRAY_NOTIFICATION);

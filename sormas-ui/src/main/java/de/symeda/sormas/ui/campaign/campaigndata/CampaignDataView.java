@@ -176,7 +176,9 @@ public class CampaignDataView extends AbstractCampaignView {
 		mainLayout.setSizeFull();
 		mainLayout.setExpandRatio(grid, 1);
 		mainLayout.setStyleName("crud-main-layout");
-
+		
+		
+	
 		Panel newFormPanel = new Panel();
 		{
 			VerticalLayout newFormLayout = new VerticalLayout();
@@ -184,7 +186,7 @@ public class CampaignDataView extends AbstractCampaignView {
 			newFormLayout.setMargin(true);
 			newFormLayout.addStyleName(CssStyles.LAYOUT_MINIMAL);
 			newFormLayout.setWidth(350, Unit.PIXELS);
-
+			if (UserProvider.getCurrent().hasUserRight(UserRight.CAMPAIGN_FORM_DATA_NEW)) {
 			newFormPanel.setContent(newFormLayout);
 			fillNewFormDropdown(newFormPanel);
 
@@ -192,8 +194,9 @@ public class CampaignDataView extends AbstractCampaignView {
 					newFormPanel);
 			newFormButton.setId("new-form");
 			addHeaderComponent(newFormButton);
+			}
 		}
-
+		
 		Panel importFormPanel = new Panel();
 		{
 			VerticalLayout importFormLayout = new VerticalLayout();
@@ -201,7 +204,7 @@ public class CampaignDataView extends AbstractCampaignView {
 			importFormLayout.setMargin(true);
 			importFormLayout.addStyleName(CssStyles.LAYOUT_MINIMAL);
 			importFormLayout.setWidth(350, Unit.PIXELS);
-
+			if (UserProvider.getCurrent().hasUserRight(UserRight.CAMPAIGN_FORM_DATA_NEW)) {
 			importFormPanel.setContent(importFormLayout);
 			fillImportDropdown(importFormPanel);
 
@@ -209,6 +212,7 @@ public class CampaignDataView extends AbstractCampaignView {
 					importFormPanel);
 			importCampaignButton.setId("campaign-form-import");
 			addHeaderComponent(importCampaignButton);
+			}
 		}
 
 		if (UserProvider.getCurrent().hasUserRight(UserRight.CAMPAIGN_FORM_DATA_EXPORT)) {
