@@ -78,7 +78,7 @@ public class Campaign extends PseudonymizableAdo {
 	private boolean archived;
 
 	@DatabaseField
-	private boolean closed = false;
+	private boolean closed;
 
 	@Column(name = "campaignFormMetas")
 	private String campaignFormMetasJson;

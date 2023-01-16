@@ -28,7 +28,6 @@ import de.symeda.sormas.api.common.Page;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
-import de.symeda.sormas.api.report.UserReportModelDto;
 import de.symeda.sormas.api.utils.SortProperty;
 
 @Remote
@@ -59,8 +58,6 @@ public interface UserFacade {
 	List<UserReferenceDto> getUsersWithSuperiorJurisdiction(UserDto user);
 
 	List<UserDto> getIndexList(UserCriteria userCriteria, Integer first, Integer max, List<SortProperty> sortProperties);
-	
-	List<UserReportModelDto> getIndexListToDto(UserCriteria userCriteria, Integer first, Integer max, List<SortProperty> sortProperties);
 
 	Page<UserDto> getIndexPage(UserCriteria userCriteria, int offset, int size, List<SortProperty> sortProperties);
 

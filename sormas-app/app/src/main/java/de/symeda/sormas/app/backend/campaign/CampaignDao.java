@@ -16,6 +16,9 @@
 package de.symeda.sormas.app.backend.campaign;
 
 import android.util.Log;
+
+import androidx.room.RawQuery;
+
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
