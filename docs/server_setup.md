@@ -22,13 +22,6 @@
       - [Install postfix and mailutils](#install-postfix-and-mailutils)
       - [Configure your system](#configure-your-system)
     - [Testing the Server Setup](#testing-the-server-setup)
-  - [Installing an APMIS Server for development](#web-server-setup)
-  
-  - [R Software Environment](#r-software-environment)
-  - [APMIS to APMIS Certificate Setup](#APMIS-to-apmis-certificate-setup)
-  - [Troubleshooting](#troubleshooting)
-    - [Problem: Login fails](#problem-login-fails)
-    - [Problem: Server is out of memory](#problem-server-is-out-of-memory)
 - [Installing an APMIS Server for Development](#installing-an-apmis-server)
   - [Content](#content)
   - [Related](#related)
@@ -38,6 +31,12 @@
       - [Windows](#windows)
     - [Postgres Database](#postgres-database)
   - [APMIS Server](#apmis-server)
+  
+  - [R Software Environment](#r-software-environment)
+  - [APMIS to APMIS Certificate Setup](#APMIS-to-apmis-certificate-setup)
+  - [Troubleshooting](#troubleshooting)
+    - [Problem: Login fails](#problem-login-fails)
+    - [Problem: Server is out of memory](#problem-server-is-out-of-memory)
 	
 	
 ## Related
@@ -300,45 +299,6 @@ nano /opt/domains/sormas/config/logback.xml
 
 Use SSL Labs to test your server security config: <https://www.ssllabs.com/ssltest>
 
-## R Software Environment
-
-In order to enable disease network diagrams in the contact dashboard, R and several extension packages are required.
-Then the Rscript executable has to be configured in the ``sormas.properties`` file.
-This can be conveniently accomplished by executing the R setup script from the APMIS ZIP archive (see [APMIS Server](#apmis-server)):
-
-* If the APMIS installation has been customized, ``r-setup.sh`` the install paths may have to be adjusted accordingly with a text editor.
-* Execute R setup script and follow its instructions.
-
-```bash
-chmod +x r-setup.sh
-./r-setup.sh
-```
-
-## APMIS to APMIS Certificate Setup
-
-To be able to communicate with other APMIS instances, there are some additional steps which need to be taken, in order to set
-up the certificate and the truststore. Please see the [related guide](https://github.com/xlg8/APMIS-Project/wiki/Creating-a-SORMAS2SORMAS-Certificate) for detailed instructions regarding SORMAS to SORMAS setup.
-<br/>
-
-## Troubleshooting
-
-### Problem: Login fails
-
-Check that the users table does have a corresponding entry. If not, the database initialization that is done when deploying sormas-ear.ear probably had an error.
-
-### Problem: Server is out of memory
-
-Old servers were set up with a memory size of less than 2048MB. You can change this using the following commands:
-
-```bash
-/opt/payara-172/glassfish/bin/asadmin --port 6048 delete-jvm-options -Xmx512m
-/opt/payara-172/glassfish/bin/asadmin --port 6048 delete-jvm-options -Xmx1024m
-/opt/payara-172/glassfish/bin/asadmin --port 6048 create-jvm-options -Xmx2048m
-```
-
-Alternative: You can edit the settings directly in the domain.xml in the config directory of the APMIS domain. Just search for ``Xmx`` - there should be two entries that need to be changed.
-
-
 
 # Installing an APMIS Server for Development
 
@@ -397,4 +357,45 @@ Make sure not to commit your changes to these files, for example by using .gitig
 
 ## Other components
 
-See [Installing an APMIS Server](SERVER_SETUP.md)
+See [Installing an APMIS Server](#installing-an-apmis-server)
+
+
+## R Software Environment
+
+In order to enable disease network diagrams in the contact dashboard, R and several extension packages are required.
+Then the Rscript executable has to be configured in the ``sormas.properties`` file.
+This can be conveniently accomplished by executing the R setup script from the APMIS ZIP archive (see [APMIS Server](#apmis-server)):
+
+* If the APMIS installation has been customized, ``r-setup.sh`` the install paths may have to be adjusted accordingly with a text editor.
+* Execute R setup script and follow its instructions.
+
+```bash
+chmod +x r-setup.sh
+./r-setup.sh
+```
+
+## APMIS to APMIS Certificate Setup
+
+To be able to communicate with other APMIS instances, there are some additional steps which need to be taken, in order to set
+up the certificate and the truststore. Please see the [related guide](https://github.com/xlg8/APMIS-Project/wiki/Creating-a-SORMAS2SORMAS-Certificate) for detailed instructions regarding SORMAS to SORMAS setup.
+<br/>
+
+## Troubleshooting
+
+### Problem: Login fails
+
+Check that the users table does have a corresponding entry. If not, the database initialization that is done when deploying sormas-ear.ear probably had an error.
+
+### Problem: Server is out of memory
+
+Old servers were set up with a memory size of less than 2048MB. You can change this using the following commands:
+
+```bash
+/opt/payara-172/glassfish/bin/asadmin --port 6048 delete-jvm-options -Xmx512m
+/opt/payara-172/glassfish/bin/asadmin --port 6048 delete-jvm-options -Xmx1024m
+/opt/payara-172/glassfish/bin/asadmin --port 6048 create-jvm-options -Xmx2048m
+```
+
+Alternative: You can edit the settings directly in the domain.xml in the config directory of the APMIS domain. Just search for ``Xmx`` - there should be two entries that need to be changed.
+
+
