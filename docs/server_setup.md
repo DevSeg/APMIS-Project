@@ -33,10 +33,10 @@
   - [APMIS Server](#apmis-server)
   
 - [Updating an APMIS Server] (#updating-an-apmis-server)
-	- [Preparations] (#preparations)
-	- [Automatic Server Update] (#automatic-server-update)
-	- [Restoring The Database] (restoring-the-database)
-	- [Default Logins] (#default-logins)
+  - [Preparations] (#preparations)
+  - [Automatic Server Update] (#automatic-server-update)
+  - [Restoring The Database] (restoring-the-database)
+  - [Default Logins] (#default-logins)
   
 - [R Software Environment](#r-software-environment)
 - [APMIS to APMIS Certificate Setup](#APMIS-to-apmis-certificate-setup)
