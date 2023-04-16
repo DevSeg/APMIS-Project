@@ -32,11 +32,11 @@
     - [Postgres Database](#postgres-database)
   - [APMIS Server](#apmis-server)
   
-  - [R Software Environment](#r-software-environment)
-  - [APMIS to APMIS Certificate Setup](#APMIS-to-apmis-certificate-setup)
-  - [Troubleshooting](#troubleshooting)
-    - [Problem: Login fails](#problem-login-fails)
-    - [Problem: Server is out of memory](#problem-server-is-out-of-memory)
+- [R Software Environment](#r-software-environment)
+- [APMIS to APMIS Certificate Setup](#APMIS-to-apmis-certificate-setup)
+- [Troubleshooting](#troubleshooting)
+  - [Problem: Login fails](#problem-login-fails)
+  - [Problem: Server is out of memory](#problem-server-is-out-of-memory)
 	
 	
 ## Related
