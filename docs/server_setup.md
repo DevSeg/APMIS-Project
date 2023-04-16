@@ -31,7 +31,7 @@
       - [Windows](#windows)
     - [Postgres Database](#postgres-database)
   - [APMIS Server](#apmis-server)
-- [Updating an APMIS Server] (#updating-an-apmis-server)
+- [Updating an APMIS Server]
 - [R Software Environment](#r-software-environment)
 - [APMIS to APMIS Certificate Setup](#APMIS-to-apmis-certificate-setup)
 - [Troubleshooting](#troubleshooting)
