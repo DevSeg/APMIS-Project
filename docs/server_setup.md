@@ -29,8 +29,17 @@
   - [Troubleshooting](#troubleshooting)
     - [Problem: Login fails](#problem-login-fails)
     - [Problem: Server is out of memory](#problem-server-is-out-of-memory)
-  - Updating an APMIS Server
-
+- [Installing an APMIS Server for Development](#installing-an-apmis-server)
+  - [Content](#content)
+  - [Related](#related)
+  - [Prerequisites](#prerequisites)
+    - [Java 11](#java-11)
+      - [Linux](#linux)
+      - [Windows](#windows)
+    - [Postgres Database](#postgres-database)
+  - [APMIS Server](#apmis-server)
+	
+	
 ## Related
 
 * [Creating an App for a Demo Server](DEMO_APP.md)
@@ -331,3 +340,61 @@ Alternative: You can edit the settings directly in the domain.xml in the config 
 
 
 
+# Installing an APMIS Server for Development
+
+**Note: This guide explains how to configure a APMIS server on Linux and Windows systems for development. 
+
+## Content
+* [Prerequisites](#prerequisites)
+  * [Java 11](#java-11)
+  * [ant](#ant)
+  * [Postgres Database](#postgres-database)
+* [APMIS Server](#apmis-server)
+
+## Related
+* [Installing an APMIS Server](SERVER_SETUP.md)
+
+## Prerequisites
+
+### Java 11
+See [Installing Java](SERVER_SETUP.md#java-11)
+
+APMIS just recently moved to Java 11. We still need to support Java 8 for a transition period. Therefore, please just
+use Java 8 language features for now.
+
+### Ant
+
+Download and install Ant, it can be done from [Ant site](https://ant.apache.org/bindownload.cgi) or with packages from your Linux distribution.
+
+### Postgres Database
+
+See [Installing Postgresql](SERVER_SETUP.md#postgres-database)
+
+
+## APMIS Server
+
+Install you own Payara server (see [Installing an APMIS Server](SERVER_SETUP.md#sormas-server)) or run ``bash ./server-setup-dev-docker.sh``
+
+This script will download Payara (if needed) and install APMIS in the Payara server.
+
+You can edit this script to change paths and ports.
+
+Other steps :
+* **IMPORTANT**: Adjust the APMIS configuration for your country in /opt/domains/sormas/sormas.properties
+* Adjust the logging configuration in ``${HOME}/opt/domains/sormas/config/logback.xml`` based on your needs (e.g. configure and activate email appender)
+* Build and deploy applications (ear and war) with you IDE.
+
+## Keycloak
+
+See [Keycloak](SERVER_SETUP.md#keycloak-server) for how to install Docker locally.
+
+If you are doing active development on Keycloak (themes, authentication mechanisms, translations, etc.) it's recommended to install the standalone variant.
+
+## VAADIN Debug Mode
+
+To enable [VAADIN Debug Mode](https://vaadin.com/docs/v8/framework/advanced/advanced-debug.html), go to ``sormas-ui/src/main/webapp/WEB-INF/web.xml`` and set ``productionMode`` to ``false``.
+Make sure not to commit your changes to these files, for example by using .gitignore. To access the debug Window, got to <url>/sormas-ui/?debug. You may need to log in as admin once first.
+
+## Other components
+
+See [Installing an APMIS Server](SERVER_SETUP.md)
