@@ -115,7 +115,7 @@ chmod +x $(date +%F)/server-setup.sh
 * **IMPORTANT**: Make sure the script executed successfully. If anything goes wrong you need to fix the problem (or ask for help), then delete the created domain directory and re-execute the script.
 * **IMPORTANT**: Adjust the APMIS configuration for your country in /opt/domains/sormas/sormas.properties
 * Adjust the logging configuration in ``/opt/domains/sormas/config/logback.xml`` based on your needs (e.g. configure and activate email appender)
-* Linux: [Update the APMIS domain](SERVER_UPDATE.md)
+* Linux: [Update the APMIS domain](#updating-an-apmis-server)
 
 ## Web Server Setup
 
@@ -312,12 +312,12 @@ Use SSL Labs to test your server security config: <https://www.ssllabs.com/sslte
 * [APMIS Server](#apmis-server)
 
 ## Related
-* [Installing an APMIS Server](SERVER_SETUP.md)
+* [Installing an APMIS Server](server_setup.md)
 
 ## Prerequisites
 
 ### Java 11
-See [Installing Java](SERVER_SETUP.md#java-11)
+See [Installing Java](server_setup.md#java-11)
 
 APMIS just recently moved to Java 11. We still need to support Java 8 for a transition period. Therefore, please just
 use Java 8 language features for now.
@@ -328,12 +328,12 @@ Download and install Ant, it can be done from [Ant site](https://ant.apache.org/
 
 ### Postgres Database
 
-See [Installing Postgresql](SERVER_SETUP.md#postgres-database)
+See [Installing Postgresql](server_setup.md#postgres-database)
 
 
 ## APMIS Server
 
-Install you own Payara server (see [Installing an APMIS Server](SERVER_SETUP.md#sormas-server)) or run ``bash ./server-setup-dev-docker.sh``
+Install you own Payara server (see [Installing an APMIS Server](server_setup.md#sormas-server)) or run ``bash ./server-setup-dev-docker.sh``
 
 This script will download Payara (if needed) and install APMIS in the Payara server.
 
@@ -344,11 +344,6 @@ Other steps :
 * Adjust the logging configuration in ``${HOME}/opt/domains/sormas/config/logback.xml`` based on your needs (e.g. configure and activate email appender)
 * Build and deploy applications (ear and war) with you IDE.
 
-## Keycloak
-
-See [Keycloak](SERVER_SETUP.md#keycloak-server) for how to install Docker locally.
-
-If you are doing active development on Keycloak (themes, authentication mechanisms, translations, etc.) it's recommended to install the standalone variant.
 
 ## VAADIN Debug Mode
 
