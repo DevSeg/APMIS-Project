@@ -33,7 +33,6 @@
   - [APMIS Server](#apmis-server)
 - [Updating an APMIS Server](#updating-an-apmis-server)
 - [R Software Environment](#r-software-environment)
-- [APMIS to APMIS Certificate Setup](#APMIS-to-apmis-certificate-setup)
 - [Troubleshooting](#troubleshooting)
   - [Problem: Login fails](#problem-login-fails)
   - [Problem: Server is out of memory](#problem-server-is-out-of-memory)
@@ -423,12 +422,6 @@ This can be conveniently accomplished by executing the R setup script from the A
 chmod +x r-setup.sh
 ./r-setup.sh
 ```
-
-## APMIS to APMIS Certificate Setup
-
-To be able to communicate with other APMIS instances, there are some additional steps which need to be taken, in order to set
-up the certificate and the truststore. Please see the [related guide](https://github.com/xlg8/APMIS-Project/wiki/Creating-a-SORMAS2SORMAS-Certificate) for detailed instructions regarding SORMAS to SORMAS setup.
-<br/>
 
 ## Troubleshooting
 
