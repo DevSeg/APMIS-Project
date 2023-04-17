@@ -32,7 +32,6 @@
     - [Postgres Database](#postgres-database)
   - [APMIS Server](#apmis-server)
 - [Updating an APMIS Server](#updating-an-apmis-server)
-- [R Software Environment](#r-software-environment)
 - [Troubleshooting](#troubleshooting)
   - [Problem: Login fails](#problem-login-fails)
   - [Problem: Server is out of memory](#problem-server-is-out-of-memory)
@@ -408,20 +407,6 @@ These are the default users for most user roles, intended to be used on developm
 **Hospital Informant:** HospInf
 **Point of Entry Informant:** PoeInf
 
-
-## R Software Environment
-
-In order to enable disease network diagrams in the contact dashboard, R and several extension packages are required.
-Then the Rscript executable has to be configured in the ``sormas.properties`` file.
-This can be conveniently accomplished by executing the R setup script from the APMIS ZIP archive (see [APMIS Server](#apmis-server)):
-
-* If the APMIS installation has been customized, ``r-setup.sh`` the install paths may have to be adjusted accordingly with a text editor.
-* Execute R setup script and follow its instructions.
-
-```bash
-chmod +x r-setup.sh
-./r-setup.sh
-```
 
 ## Troubleshooting
 
