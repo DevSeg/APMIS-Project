@@ -73,8 +73,7 @@ public class UserForm  extends FormLayout{
 	Button delete = new Button("Delete");
 	Button close = new Button("Cancel");
 	
-	public UserForm(List<AreaReferenceDto> regions, List<RegionReferenceDto> provinces,
-			List<DistrictReferenceDto> districts) {
+	public UserForm() {
 addClassName("contact-form");
 		
 		HorizontalLayout hor = new HorizontalLayout();

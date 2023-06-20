@@ -89,7 +89,7 @@ public class CommunitiesView extends AbstractConfigurationView {
 	protected Button importButton;
 	protected Button createButton; 
 	private MenuBar bulkOperationsDropdown;
-
+	private RowCount rowsCount;
 	public CommunitiesView() {
 
 		super(VIEW_NAME);
@@ -105,7 +105,11 @@ public class CommunitiesView extends AbstractConfigurationView {
 		grid = new CommunitiesGrid(criteria);
 		gridLayout = new VerticalLayout();
 		gridLayout.addComponent(createFilterBar());
-		gridLayout.addComponent(new RowCount(Strings.labelNumberOfCommunities, grid.getItemCount()));
+		
+		rowsCount = new RowCount(Strings.labelNumberOfUsers, grid.getItemCount());
+		gridLayout.addComponent(rowsCount);
+		
+//		gridLayout.addComponent(new RowCount(Strings.labelNumberOfCommunities, grid.getItemCount()));
 		gridLayout.addComponent(grid);
 		gridLayout.setMargin(true);
 		gridLayout.setSpacing(false);
@@ -265,8 +269,11 @@ HeaderRow mainHeader = grid.getDefaultHeaderRow();
 		districtFilter.setWidth(140, Unit.PIXELS);
 		districtFilter.setCaption(I18nProperties.getPrefixCaption(CommunityDto.I18N_PREFIX, CommunityDto.DISTRICT));
 		districtFilter.addValueChangeListener(e -> {
-			criteria.district((DistrictReferenceDto) e.getProperty().getValue());
+			DistrictReferenceDto district = (DistrictReferenceDto) e.getProperty().getValue();
+			
+			criteria.district(district);
 			grid.reload();
+			rowsCount.update(grid.getItemCount());
 		});
 		filterLayout.addComponent(districtFilter);
 

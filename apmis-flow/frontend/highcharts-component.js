@@ -1,5 +1,4 @@
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-import 'highcharts';
 
 class HighchartsComponentConnector extends PolymerElement {
 
