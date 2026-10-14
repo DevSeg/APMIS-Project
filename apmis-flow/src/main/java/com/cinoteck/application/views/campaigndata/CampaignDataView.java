@@ -4,15 +4,9 @@ package com.cinoteck.application.views.campaigndata;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
@@ -22,6 +16,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -107,6 +102,7 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
+import de.symeda.sormas.api.campaign.data.CampaignFormImageNamingContext;
 import de.symeda.sormas.api.campaign.data.CampaignFormImageValue;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
@@ -197,6 +193,7 @@ public class CampaignDataView extends VerticalLayout
 	Button selectAllButtonpLACEHOLDER = new Button();
 	private String exportFileName;
 	private GridExporter<CampaignFormDataIndexDto> exporter;
+	private Map<String, String> exportImageFileNames;
 
 	private DataProvider<CampaignFormDataIndexDto, CampaignFormDataCriteria> dataProvider;
 
@@ -299,29 +296,30 @@ public class CampaignDataView extends VerticalLayout
 
 		Button exportButton = new Button(I18nProperties.getCaption(Captions.export));
 		exportButton.setIcon(new Icon(VaadinIcon.UPLOAD));
+		
+		Button exportImagesButton = new Button("Export with Images (ZIP)");
+		exportImagesButton.setIcon(new Icon(VaadinIcon.DOWNLOAD));
 
 		exportTransposedDataButton.setIcon(new Icon(VaadinIcon.UPLOAD));
 //		exporttransposeDataDictionary.setIcon(new Icon(VaadinIcon.DOWNLOAD));
 		
-		Anchor zipAnchor = new Anchor("", "Export with Images");
-		zipAnchor.getStyle().set("display", "none");
-		zipAnchor.getElement().setAttribute("download", true);
-		
-		
-		Button exportImagesButton = new Button("Export with Images (ZIP)");
-		exportImagesButton.setIcon(new Icon(VaadinIcon.DOWNLOAD));
-		exportImagesButton.addClickListener(e -> {
-		    zipAnchor.setHref(createZipExportResource());
-		    zipAnchor.getElement().callJsFunction("click");
-		});
-		
+
 		
 
 		exportButton.addClickListener(e -> {
-			anchor.getElement().callJsFunction("click");
+			
+			if (checkIfActiveFormContainsImageField(campaignFormCombo.getValue().getUuid())) {
+				anchor.setHref(createZipExportResource());
+				anchor.getElement().callJsFunction("click");
+
+			}else {
+			
+				anchor.getElement().callJsFunction("click");
+
+			}
 		});
 
-		actionButtonlayout.add(campaignYear, campaignz, campaignPhase, newForm, importFormData, exportButton, anchor, exportImagesButton, zipAnchor);
+		actionButtonlayout.add(campaignYear, campaignz, campaignPhase, newForm, importFormData, exportButton, anchor);
 		anchor.getStyle().set("display", "none");
 
 		HorizontalLayout level1Filters = new HorizontalLayout();
@@ -983,6 +981,8 @@ public class CampaignDataView extends VerticalLayout
 					generateTransposeDataFunctions(actionButtonlayout, campaignFormCombo.getValue().toString(),
 							criteria);
 				}
+				
+				checkIfActiveFormContainsImageField(campaignFormCombo.getValue().getUuid());
 			} else {
 				importanceSwitcher.clear();
 				importanceSwitcher.setReadOnly(true);
@@ -1553,6 +1553,8 @@ public class CampaignDataView extends VerticalLayout
 	private StreamResource createZipExportResource() {
 	    return new StreamResource(exportFileName + ".zip", () -> {
 	        try {
+	            List<CampaignFormDataIndexDto> exportRows = fetchExportRows();
+	            exportImageFileNames = buildExportImageFileNames(exportRows);
 	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	            try (ZipOutputStream zos = new ZipOutputStream(baos)) {
 
@@ -1560,7 +1562,7 @@ public class CampaignDataView extends VerticalLayout
 	                zos.write(readCsvBytes());
 	                zos.closeEntry();
 
-	                for (Map.Entry<String, byte[]> img : collectImagesFromGrid().entrySet()) {
+	                for (Map.Entry<String, byte[]> img : collectImagesFromGrid(exportRows).entrySet()) {
 	                    zos.putNextEntry(new ZipEntry("images/" + img.getKey()));
 	                    zos.write(img.getValue());
 	                    zos.closeEntry();
@@ -1579,25 +1581,24 @@ public class CampaignDataView extends VerticalLayout
 	        return in.readAllBytes();
 	    }
 	}
-	private Map<String, byte[]> collectImagesFromGrid() {
+	private Map<String, byte[]> collectImagesFromGrid(List<CampaignFormDataIndexDto> exportRows) {
 	    Map<String, byte[]> images = new LinkedHashMap<>();
-	    List<CampaignFormDataIndexDto> rows =
-	            grid.getDataProvider().fetch(new Query<>()).collect(Collectors.toList());
 
-	    for (CampaignFormDataIndexDto item : rows) {
+	    for (CampaignFormDataIndexDto item : exportRows) {
+	        if (item.getFormValues() == null) {
+	            continue;
+	        }
 	        for (CampaignFormDataEntry entry : item.getFormValues()) {
 	            for (CampaignFormImageValue img : extractImageValues(entry.getValue())) {
 	                if (!img.isUploaded() || StringUtils.isBlank(img.getImageId())) {
 	                    continue;
 	                }
-	                String base = imageDisplayName(img);
-	                String uniqueName = base;
-	                int n = 1;
-	                while (images.containsKey(uniqueName)) {
-	                    uniqueName = base + "_" + (n++);
+	                String exportName = exportImageFileName(img, entry.getId());
+	                if (images.containsKey(exportName)) {
+	                    continue;
 	                }
 	                try {
-	                    images.put(uniqueName, FacadeProvider.getCampaignFormImageFacade().readImage(img.getImageId()));
+	                    images.put(exportName, FacadeProvider.getCampaignFormImageFacade().readImage(img.getImageId()));
 	                } catch (IOException e) {
 	                    logger.error("Could not read image " + img.getImageId(), e);
 	                }
@@ -1605,6 +1606,125 @@ public class CampaignDataView extends VerticalLayout
 	        }
 	    }
 	    return images;
+	}
+
+	/**
+	 * Fetches the rows in the very same order the grid exporter writes them, so the row numbers
+	 * stamped on the exported images line up with the exported CSV.
+	 */
+	private List<CampaignFormDataIndexDto> fetchExportRows() {
+	    Query<CampaignFormDataIndexDto, CampaignFormDataCriteria> query = new Query<>(0,
+	            dataProvider.size(new Query<>()), grid.getDataCommunicator().getBackEndSorting(),
+	            grid.getDataCommunicator().getInMemorySorting(), null);
+	    return dataProvider.fetch(query).collect(Collectors.toList());
+	}
+
+	/**
+	 * Maps every exported image to a unique file name following the geographic naming convention
+	 * (region_province_district_clusterNumber_clusterName, see the image upload naming) extended with the
+	 * image field id and the 1-based export row number, so images can be matched to their CSV row and to the
+	 * field they belong to. A trailing counter is added only when a field holds several images for the same
+	 * row. The CSV image column uses this exact same name, so it maps directly onto the ZIP entry.
+	 */
+	private Map<String, String> buildExportImageFileNames(List<CampaignFormDataIndexDto> exportRows) {
+	    Map<String, String> fileNames = new LinkedHashMap<>();
+	    Map<String, String> geoBaseNames = new HashMap<>();
+	    int rowNumber = 0;
+
+	    for (CampaignFormDataIndexDto item : exportRows) {
+	        rowNumber++;
+	        Map<String, Integer> occurrences = new HashMap<>();
+	        if (item.getFormValues() == null) {
+	            continue;
+	        }
+	        for (CampaignFormDataEntry entry : item.getFormValues()) {
+	            String fieldId = sanitizeFileSegment(entry.getId());
+	            for (CampaignFormImageValue img : extractImageValues(entry.getValue())) {
+	                if (!img.isUploaded() || StringUtils.isBlank(img.getImageId())) {
+	                    continue;
+	                }
+	                String key = imageExportKey(img.getImageId(), fieldId);
+	                if (fileNames.containsKey(key)) {
+	                    continue;
+	                }
+	                String geoBaseName = geoBaseNames.computeIfAbsent(geoKey(item), k -> imageGeoBaseName(item));
+	                StringBuilder name = new StringBuilder(geoBaseName).append('_').append(fieldId).append('_').append(rowNumber);
+	                int occurrence = occurrences.merge(fieldId, 1, Integer::sum);
+	                if (occurrence > 1) {
+	                    name.append('_').append(occurrence);
+	                }
+	                fileNames.put(key, name.append('.').append(imageExtension(img)).toString());
+	            }
+	        }
+	    }
+	    return fileNames;
+	}
+
+	private String exportImageFileName(CampaignFormImageValue img, String fieldId) {
+	    if (exportImageFileNames != null && StringUtils.isNotBlank(img.getImageId())) {
+	        String mapped = exportImageFileNames.get(imageExportKey(img.getImageId(), sanitizeFileSegment(fieldId)));
+	        if (StringUtils.isNotBlank(mapped)) {
+	            return mapped;
+	        }
+	    }
+	    return imageDisplayName(img);
+	}
+
+	private String imageExportKey(String imageId, String fieldId) {
+	    return imageId + "|" + fieldId;
+	}
+
+	private String geoKey(CampaignFormDataIndexDto item) {
+	    return String.join("|", StringUtils.defaultString(item.getArea()), StringUtils.defaultString(item.getRegion()),
+	            StringUtils.defaultString(item.getDistrict()),
+	            item.getClusternumber() == null ? "" : String.valueOf(item.getClusternumber()),
+	            StringUtils.defaultString(item.getCommunity()));
+	}
+
+	/** Builds the geographic part of the file name using the shared image naming convention. */
+	private String imageGeoBaseName(CampaignFormDataIndexDto item) {
+	    CampaignFormImageNamingContext context = new CampaignFormImageNamingContext();
+	    context.setRegion(item.getArea());
+	    context.setProvince(item.getRegion());
+	    context.setDistrict(item.getDistrict());
+	    context.setClusterName(item.getCommunity());
+	    context.setClusterNumber(item.getClusternumber() == null ? null : String.valueOf(item.getClusternumber()));
+	    return FacadeProvider.getCampaignFormImageFacade().generateImageFileName(context);
+	}
+
+	private String imageExtension(CampaignFormImageValue img) {
+	    for (String candidate : new String[] { img.getGeneratedFileName(), img.getOriginalFileName() }) {
+	        if (StringUtils.isNotBlank(candidate)) {
+	            int dot = candidate.lastIndexOf('.');
+	            if (dot >= 0 && dot < candidate.length() - 1) {
+	                String extension = candidate.substring(dot + 1).toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+	                if (StringUtils.isNotBlank(extension)) {
+	                    return "jpeg".equals(extension) ? "jpg" : extension;
+	                }
+	            }
+	        }
+	    }
+	    String mimeType = img.getMimeType();
+	    if (StringUtils.isNotBlank(mimeType) && mimeType.trim().toLowerCase(Locale.ROOT).startsWith("image/")) {
+	        String extension = mimeType.trim().toLowerCase(Locale.ROOT).substring("image/".length());
+	        if ("jpeg".equals(extension)) {
+	            return "jpg";
+	        }
+	        if (StringUtils.isNotBlank(extension)) {
+	            return extension;
+	        }
+	    }
+	    return "jpg";
+	}
+
+	private String sanitizeFileSegment(String input) {
+	    if (StringUtils.isBlank(input)) {
+	        return "NA";
+	    }
+	    String normalized = input.trim().replaceAll("\\s+", "-").replaceAll("[^A-Za-z0-9\\-]", "");
+	    normalized = normalized.replaceAll("-+", "-");
+	    normalized = StringUtils.strip(normalized, "-");
+	    return StringUtils.isBlank(normalized) ? "NA" : normalized;
 	}
 	
 
@@ -1724,24 +1844,7 @@ public class CampaignDataView extends VerticalLayout
 		return new HashSet<>(selectedItems);
 	}
 
-//	public void checkIfExportTransposedDataButtonIsAttached() {
-//		boolean exportButtonExists = actionButtonlayout.getChildren()
-//				.anyMatch(component -> component.equals(exportTransposedDataButton));
-//
-//		boolean transposdeDataAnchorExists = actionButtonlayout.getChildren()
-//				.anyMatch(component -> component.equals(transposdeDataAnchor));
-//
-////		boolean exporttransposeDataDictionaryExists = actionButtonlayout.getChildren()
-////				.anyMatch(component -> component.equals(exporttransposeDataDictionary));
-//
-////		System.out.println("exportButtonExists" + exportButtonExists +  "transposdeDataAnchorExists" + transposdeDataAnchorExists + "0=====================");
-//
-//		if (exportButtonExists && transposdeDataAnchorExists) {
-//			actionButtonlayout.remove(exportTransposedDataButton, transposdeDataAnchor);
-//		} else {
-//
-//		}
-//	}
+
 
 	public void generateTransposeDataFunctions(HorizontalLayout actionButionLayout, String formName,
 			CampaignFormDataCriteria criteria) {
@@ -1795,6 +1898,25 @@ public class CampaignDataView extends VerticalLayout
 
 		}
 	}
+	
+	private boolean checkIfActiveFormContainsImageField(String campaignFormMetaUuid) {
+	    if (campaignFormMetaUuid == null) {
+	        return false;
+	    }
+
+	    List<CampaignFormElement> campaignFormElements =  FacadeProvider.getCampaignFormMetaFacade().getCampaignFormMetaByUuid(campaignFormMetaUuid).getCampaignFormElements();
+	    if (campaignFormElements == null) {
+	        return false;
+	    }
+
+	    for (CampaignFormElement element : campaignFormElements) {
+	        if ("image".equalsIgnoreCase(element.getType())) {
+	            return true;
+	        }
+	    }
+
+	    return false;
+	}
 
 	public void removeColumnsSelectionn() {
 		grid.setSelectionMode(SelectionMode.NONE);
@@ -1802,12 +1924,10 @@ public class CampaignDataView extends VerticalLayout
 
 	public void setgridVisibility() {
 		grid.getColumnByKey(CampaignFormDataIndexDto.ISVERIFIED).setVisible(true);
-//		grid.getColumnByKey("Cam").setVisible(true);
 	}
 
 	public void setgridVisibilityx() {
 		grid.getColumnByKey(CampaignFormDataIndexDto.ISPUBLISHED).setVisible(true);
-//		grid.getColumnByKey("Cam").setVisible(true);
 	}
 
 	public void configureFormNameTranslations() {
@@ -1821,18 +1941,15 @@ public class CampaignDataView extends VerticalLayout
 
 		switch (language) {
 		case "Pashto":
-
 			if (userProvider.getUser().getArea() != null) {
 				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
 						.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(
 								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
 								userProvider.getUser().getArea());
-				System.out.println("11111111111111111111111111111111111111");
 			} else {
 				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
 						.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(
 								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
-				System.out.println("22222222222222222222222222222222222222");
 			}
 
 			for (FormAccess n : xx) {
@@ -1846,26 +1963,10 @@ public class CampaignDataView extends VerticalLayout
 
 			filterdList.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
 
-//			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-//					.getAllCampaignFormMetasAsReferencesByRoundUserLanguageCampaignandForm(
-//							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
-//							userProvider.getUser().getFormAccess(), "Dari");
-//			campaignForms.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
-
 			newForm.setItems(filterdList);
 			importFormData.setItems(filterdList);
 			campaignFormCombo.setItems(filterdList);
-//			campaignForms.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
-//			newForm.setItems(campaignForms);
-//
-////			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-////					.getAllCampaignFormMetasAsReferencesByRoundUserLanguageCampaignandForm(
-////							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
-////							userProvider.getUser().getFormAccess(), "Pashto");
-////			campaignForms.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
-////			newForm.setItems(campaignForms);
-//			importFormData.setItems(campaignForms);
-//			campaignFormCombo.setItems(campaignForms);
+
 			break;
 
 		case "Dari":
@@ -1875,7 +1976,6 @@ public class CampaignDataView extends VerticalLayout
 						.getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDarix(
 								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
 								userProvider.getUser().getArea());
-				System.out.println("33333333333333333333333333333333333333333");
 			} else {
 				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
 						.getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDari(
@@ -3184,7 +3284,7 @@ private StreamResource buildImageResource(String imageId) {
 	        return "";
 	    }
 	    return extractImageValues(formValue.getValue()).stream()
-	            .map(this::imageDisplayName)
+	            .map(img -> exportImageFileName(img, property))
 	            .filter(StringUtils::isNotBlank)
 	            .collect(Collectors.joining(", "));
 	}
