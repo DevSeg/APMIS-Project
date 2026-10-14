@@ -129,6 +129,7 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormImageSource;
 import de.symeda.sormas.api.campaign.data.CampaignFormImageValue;
+import de.symeda.sormas.api.campaign.data.CampaignFormImageValidationDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormImageNamingContext;
 import de.symeda.sormas.api.campaign.data.translation.TranslationElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
@@ -163,6 +164,7 @@ import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserActivitySummaryDto;
 import de.symeda.sormas.api.user.UserRight;
 import de.symeda.sormas.api.user.UserRole;
+import de.symeda.sormas.api.utils.ValidationRuntimeException;
 
 public class CampaignFormBuilder extends VerticalLayout {
 
@@ -178,20 +180,16 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private Map<String, String> userTranslationsHint = new HashMap<String, String>();
 	private Map<String, String> userOptTranslations = new HashMap<String, String>();
 	Map<String, Component> fields;
-//<<<<<<< HEAD
 	private final Map<String, List<CampaignFormImageValue>> imageFieldValues = new HashMap<>();
 	private final Map<String, byte[]> imagePreviewCache = new HashMap<>();
 	private static final ObjectMapper IMAGE_VALUE_OBJECT_MAPPER = new ObjectMapper();
 	private final Map<String, Component> imageLayouts = new HashMap<>();
-//=======
-//	private final Map<String, CampaignFormImageValue> imageFieldValues = new HashMap<>();
-//	private final Map<String, byte[]> imageFieldBytes = new HashMap<>();
+
 	private static final int MIN_IMAGE_WIDTH = 640;
 	private static final int MIN_IMAGE_HEIGHT = 480;
 	private static final double MIN_IMAGE_BRIGHTNESS = 25.0;
 	private static final double MAX_IMAGE_BRIGHTNESS = 235.0;
 	private static final double MIN_IMAGE_SHARPNESS_VARIANCE = 40.0;
-//>>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
 
 	private Map<String, String> optionsValues = new HashMap<String, String>();
 	private Map<String, String> optionsOrder = new HashMap<String, String>();
@@ -3144,13 +3142,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 	public List<CampaignFormDataEntry> getFormValues() {
 		return fields.keySet().stream().map(id -> {
 			Component field = fields.get(id);
-			if (imageFieldValues.containsKey(id)) {
+			CampaignFormElement element = formElements.stream().filter(e -> id.equals(e.getId())).findFirst()
+					.orElse(null);
+
+			if (element != null && CampaignFormElementType.IMAGE == CampaignFormElementType.fromString(element.getType())) {
 				List<CampaignFormImageValue> images = imageFieldValues.get(id);
-
-				CampaignFormElement element = formElements.stream().filter(e -> id.equals(e.getId())).findFirst()
-						.orElse(null);
-
-				boolean isMultiple = element != null && Boolean.TRUE.equals(element.getImageMultiple());
+				boolean isMultiple = Boolean.TRUE.equals(element.getImageMultiple());
 
 				if (images == null || images.isEmpty()) {
 					return new CampaignFormDataEntry(id, null);
@@ -3164,7 +3161,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 					CampaignFormImageValue first = images.get(0);
 					return new CampaignFormDataEntry(id, first != null ? first.toMap() : null);
 				}
-
 			}
 
 			if (field instanceof DatePicker) {
@@ -3415,7 +3411,15 @@ public class CampaignFormBuilder extends VerticalLayout {
 					wasCompressed = true;
 				}
 
-//<<<<<<< HEAD
+				CampaignFormImageValidationDto contentValidation = FacadeProvider.getCampaignFormImageFacade()
+						.validateImageContent(finalBytes);
+				if (contentValidation != null && !contentValidation.isValid()) {
+					Notification.show(StringUtils.defaultIfBlank(contentValidation.getMessage(),
+							"Image rejected: contains prohibited content (human face/person or animal)."), 8000,
+							Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+					return;
+				}
+
 				CampaignFormImageValue uploaded = new CampaignFormImageValue();
 				uploaded.setOriginalFileName(event.getFileName());
 				uploaded.setMimeType(event.getMIMEType());
@@ -4059,6 +4063,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 						if (sharpnessVariance < MIN_IMAGE_SHARPNESS_VARIANCE) {
 							failedChecks.add("Blur validation failed: image is not sufficiently sharp (sharpness "
 									+ Math.round(sharpnessVariance) + ").");
+						}
+
+						CampaignFormImageValidationDto contentValidation = FacadeProvider.getCampaignFormImageFacade()
+								.validateImageContent(imageBytes);
+						if (contentValidation != null && !contentValidation.isValid()) {
+							failedChecks.add(StringUtils.defaultIfBlank(contentValidation.getMessage(),
+									"Image contains prohibited content (human face/person or animal)."));
 						}
 					}
 				}
@@ -4709,9 +4720,15 @@ public class CampaignFormBuilder extends VerticalLayout {
 						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
 
 						proceedWithUnPublishaandUnVerify = true;
+					} catch (ValidationRuntimeException e) {
+						Notification.show(e.getMessage(), 8000, Position.MIDDLE)
+								.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						return false;
 					} catch (Exception e) {
-						proceedWithUnPublishaandUnVerify = false;
-
+						logger.error("Error saving campaign form data", e);
+						Notification.show("Error saving data: " + e.getMessage(), 8000, Position.MIDDLE)
+								.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						return false;
 					} finally {
 
 						if (proceedWithUnPublishaandUnVerify) {
@@ -4871,9 +4888,20 @@ public class CampaignFormBuilder extends VerticalLayout {
 //						dataDto.setRecordgroupuuid(dataDto.getUuid());
 					dataDto.setRecordversion(1L);
 //						if (dataDto.getFormType())
-					dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
-					Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
-					return true;
+					try {
+						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
+						Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
+						return true;
+					} catch (ValidationRuntimeException ex) {
+						Notification.show(ex.getMessage(), 8000, Position.MIDDLE)
+								.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						return false;
+					} catch (Exception ex) {
+						logger.error("Error saving campaign form data", ex);
+						Notification.show("Error saving data: " + ex.getMessage(), 8000, Position.MIDDLE)
+								.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						return false;
+					}
 //					}
 
 				} else {

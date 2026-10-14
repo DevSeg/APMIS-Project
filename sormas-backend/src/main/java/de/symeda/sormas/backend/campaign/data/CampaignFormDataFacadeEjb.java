@@ -419,30 +419,27 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 						"Required image field '" + element.getId() + "' must contain at least one image.");
 			}
 
-			if (value == null) {
+			if (value == null || (value instanceof String && StringUtils.isBlank((String) value)) || !hasImageValue) {
 				continue;
 			}
 
 			boolean imageMultiple = Boolean.TRUE.equals(element.getImageMultiple());
 			if (imageMultiple) {
-				if(element.isImportant()) {
-					if (value instanceof List<?>) {
-						List<?> imageValues = (List<?>) value;
-						if (imageValues.isEmpty()) {
-							throw new ValidationRuntimeException(
-									"Required image field '" + element.getId() + "' must contain at least one image.");
-						}
-					} else {
-						throw new ValidationRuntimeException(
-								"Required image field '" + element.getId() + "' must contain at least one image.");
-					}
-				}
-				if (!(value instanceof List<?>)) {
+				List<?> imageValues;
+				if (value instanceof List<?>) {
+					imageValues = (List<?>) value;
+				} else if (value instanceof Map<?, ?>) {
+					imageValues = Collections.singletonList(value);
+				} else {
 					throw new ValidationRuntimeException(
 							"Image field '" + element.getId() + "' expects a list of images.");
 				}
 
-				List<?> imageValues = (List<?>) value;
+				if (element.isImportant() && imageValues.isEmpty()) {
+					throw new ValidationRuntimeException(
+							"Required image field '" + element.getId() + "' must contain at least one image.");
+				}
+
 				int imageCount = imageValues.size();
 				Integer maxCount = element.getImageMaxCount();
 				if (maxCount != null && imageCount > maxCount) {
