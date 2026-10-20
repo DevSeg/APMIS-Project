@@ -147,6 +147,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 	Paragraph countRowItems;
 	boolean isNewUser = false;
 	Set<UserRole> sortedUserRoles;
+	Set<UserRole> sortedUserRoless;
 
 	public UserView() {
 
@@ -162,20 +163,28 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		criteria = new UserCriteria();
 		
 		Set<UserRole> roles = FacadeProvider.getUserRoleConfigFacade().getEnabledUserRoles();
+		Set<UserRole> roless = FacadeProvider.getUserRoleConfigFacade().getEnabledUserRoles();
 		roles.remove(UserRole.BAG_USER);
+		roless.remove(UserRole.BAG_USER);
                 
         roles = getHierarchicalManageableRoles(userProvider.getUser().getUserRoles(), roles);
+        roless = getHierarchicalManageableRolesSettings(userProvider.getUser().getUserRoles(), roless);
 
 		List<UserRole> rolesList = new ArrayList<>(roles);
+		List<UserRole> rolesListt = new ArrayList<>(roless);
 
 		// Sorting the user roles using comparator
 		Collections.sort(rolesList, new UserRoleCustomComparator());
+		Collections.sort(rolesListt, new UserRoleCustomComparator());
         
         // Preserves the custom sort order for the Vaadin dropdown
 		sortedUserRoles = new LinkedHashSet<>(rolesList);
 		
+		sortedUserRoless = new LinkedHashSet<>(rolesListt);
+		
 		criteria.setUserType(userProvider.getUser().getUsertype());
 		criteria.userRoleSet(sortedUserRoles);
+		criteria.area(userProvider.getUser().getArea());
 		filterDataProvider = usersDataProvider.withConfigurableFilter();
 		filterDataProvider.setFilter(criteria);
 
@@ -394,7 +403,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		userRolesFilter.getStyle().set("padding-top", "0px!important");
 		userRolesFilter.setClearButtonVisible(true);
 
-		userRolesFilter.setItems(sortedUserRoles);
+		userRolesFilter.setItems(sortedUserRoless);
 
 		userRolesFilter.addValueChangeListener(e -> {
 			selectedRolesX = e.getValue();
@@ -403,8 +412,8 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 					.collect(Collectors.joining(","));
 			if (selectedRolesX.isEmpty()) {
 				criteria.userRoleSet(null);
-				System.out.println("sortedUserRolessortedUserRolessortedUserRoles " + sortedUserRoles);
-				criteria.userRoleSet(sortedUserRoles);
+				System.out.println("sortedUserRolessortedUserRolessortedUserRoles " + sortedUserRoless);
+				criteria.userRoleSet(sortedUserRoless);
 			} else {
 				criteria.userRoleSet(null);
 				criteria.userRoleSet(selectedRolesX);
@@ -762,7 +771,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 			return checkbox;
 		});
 
-		criteria = new UserCriteria();
+//		criteria = new UserCriteria();
 		grid.setSelectionMode(SelectionMode.SINGLE);
 		grid.setMultiSort(true, MultiSortPriority.APPEND);
 		grid.setSizeFull();
@@ -853,68 +862,132 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 		grid.setItems(filterDataProvider);
 
+//		if (userProvider.hasUserRight(UserRight.USER_EDIT)) {
+//
+//			grid.addSelectionListener(event -> {
+//				event.getFirstSelectedItem().ifPresent(item -> {
+//					
+//					Set<UserRole> loggedInRoles = userProvider.getUser().getUserRoles();
+//					Set<UserRole> targetRoles = item.getUserRoles();
+//
+//					boolean isAdmin = loggedInRoles != null && loggedInRoles.contains(UserRole.ADMIN);
+//
+//					if (isAdmin) {
+//						// Admins are exempt and can open anyone (including other Admins)
+//						editUser(item, false);
+//					} else {
+//						// Calculate max rank of logged-in user
+//						int loggedInMaxRank = -1;
+//						if (loggedInRoles != null) {
+//							for (UserRole r : loggedInRoles) {
+//								int rank = getRoleRank(r);
+//								if (rank > loggedInMaxRank) {
+//									loggedInMaxRank = rank;
+//								}
+//							}
+//						}
+//
+//						// Calculate max rank of the target user being clicked
+//						int targetMaxRank = -1;
+//						if (targetRoles != null) {
+//							for (UserRole r : targetRoles) {
+//								int rank = getRoleRank(r);
+//								if (rank > targetMaxRank) {
+//									targetMaxRank = rank;
+//								}
+//							}
+//						}
+//
+//						// Block access if target user is at the same or higher jurisdiction level
+//						if (targetMaxRank >= loggedInMaxRank) {
+//							Notification notification = new Notification();
+//							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+//							notification.setPosition(Position.MIDDLE);
+//							
+//							Button closeButton = new Button(new Icon("lumo", "cross"));
+//							closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//							closeButton.getElement().setAttribute("aria-label", "Close");
+//							closeButton.addClickListener(e -> notification.close());
+//							
+//							Paragraph text = new Paragraph("Access Denied: You cannot edit users at or above your jurisdiction level.");
+//							HorizontalLayout noteLayout = new HorizontalLayout(text, closeButton);
+//							noteLayout.setAlignItems(Alignment.CENTER);
+//							
+//							notification.add(noteLayout);
+//							notification.open();
+//						} else {
+//							// Allow edit for subordinate users
+//							editUser(item, false);
+//						}
+//					}
+//
+//					grid.deselectAll(); // Deselect all items after processing the selected item
+//				});
+//			});
+//		}
+		
 		if (userProvider.hasUserRight(UserRight.USER_EDIT)) {
 
-			grid.addSelectionListener(event -> {
-				event.getFirstSelectedItem().ifPresent(item -> {
-					
-					Set<UserRole> loggedInRoles = userProvider.getUser().getUserRoles();
-					Set<UserRole> targetRoles = item.getUserRoles();
+		    grid.addSelectionListener(event -> {
+		        event.getFirstSelectedItem().ifPresent(item -> {
+		            
+		            Set<UserRole> loggedInRoles = userProvider.getUser().getUserRoles();
+		            Set<UserRole> targetRoles = item.getUserRoles();
 
-					boolean isAdmin = loggedInRoles != null && loggedInRoles.contains(UserRole.ADMIN);
+		            boolean isAdmin = loggedInRoles != null && loggedInRoles.contains(UserRole.ADMIN);
 
-					if (isAdmin) {
-						// Admins are exempt and can open anyone (including other Admins)
-						editUser(item, false);
-					} else {
-						// Calculate max rank of logged-in user
-						int loggedInMaxRank = -1;
-						if (loggedInRoles != null) {
-							for (UserRole r : loggedInRoles) {
-								int rank = getRoleRank(r);
-								if (rank > loggedInMaxRank) {
-									loggedInMaxRank = rank;
-								}
-							}
-						}
+		            if (isAdmin) {
+		                // Admins are exempt and can open anyone (including other Admins)
+		                editUser(item, false);
+		            } else {
+		                // Calculate max rank of logged-in user
+		                int loggedInMaxRank = -1;
+		                if (loggedInRoles != null) {
+		                    for (UserRole r : loggedInRoles) {
+		                        int rank = getRoleRank(r);
+		                        if (rank > loggedInMaxRank) {
+		                            loggedInMaxRank = rank;
+		                        }
+		                    }
+		                }
 
-						// Calculate max rank of the target user being clicked
-						int targetMaxRank = -1;
-						if (targetRoles != null) {
-							for (UserRole r : targetRoles) {
-								int rank = getRoleRank(r);
-								if (rank > targetMaxRank) {
-									targetMaxRank = rank;
-								}
-							}
-						}
+		                // Calculate max rank of the target user being clicked
+		                int targetMaxRank = -1;
+		                if (targetRoles != null) {
+		                    for (UserRole r : targetRoles) {
+		                        int rank = getRoleRank(r);
+		                        if (rank > targetMaxRank) {
+		                            targetMaxRank = rank;
+		                        }
+		                    }
+		                }
 
-						// Block access if target user is at the same or higher jurisdiction level
-						if (targetMaxRank >= loggedInMaxRank) {
-							Notification notification = new Notification();
-							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-							notification.setPosition(Position.MIDDLE);
-							
-							Button closeButton = new Button(new Icon("lumo", "cross"));
-							closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-							closeButton.getElement().setAttribute("aria-label", "Close");
-							closeButton.addClickListener(e -> notification.close());
-							
-							Paragraph text = new Paragraph("Access Denied: You cannot edit users at or above your jurisdiction level.");
-							HorizontalLayout noteLayout = new HorizontalLayout(text, closeButton);
-							noteLayout.setAlignItems(Alignment.CENTER);
-							
-							notification.add(noteLayout);
-							notification.open();
-						} else {
-							// Allow edit for subordinate users
-							editUser(item, false);
-						}
-					}
+		                // Block access if target user is at the same or higher jurisdiction level
+		                if (targetMaxRank >= loggedInMaxRank) {
+		                    Notification notification = new Notification();
+		                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		                    notification.setPosition(Position.MIDDLE);
+		                    
+		                    Button closeButton = new Button(new Icon("lumo", "cross"));
+		                    closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+		                    closeButton.getElement().setAttribute("aria-label", "Close");
+		                    closeButton.addClickListener(e -> notification.close());
+		                    
+		                    Paragraph text = new Paragraph("Access Denied: You cannot edit users at or above your jurisdiction level.");
+		                    HorizontalLayout noteLayout = new HorizontalLayout(text, closeButton);
+		                    noteLayout.setAlignItems(Alignment.CENTER);
+		                    
+		                    notification.add(noteLayout);
+		                    notification.open();
+		                } else {
+		                    // Allow edit for subordinate users
+		                    editUser(item, false);
+		                }
+		            }
 
-					grid.deselectAll(); // Deselect all items after processing the selected item
-				});
-			});
+		            grid.deselectAll(); // Deselect all items after processing the selected item
+		        });
+		    });
 		}
 
 		return;
@@ -1522,10 +1595,49 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		assignableRoles.removeIf(targetRole -> {
 			if (targetRole == UserRole.ADMIN) {
 				return true; 
-			}
+			}			
+			
 			int targetRank = getRoleRank(targetRole);
 			
-			return targetRank >= userRank; 
+			return targetRank > userRank; 
+		});
+
+		return assignableRoles;
+	}
+	
+	public static Set<UserRole> getHierarchicalManageableRolesSettings(Set<UserRole> loggedInUserRoles, Set<UserRole> availableRoles) {
+		Set<UserRole> assignableRoles = new HashSet<>(availableRoles);
+
+		if (loggedInUserRoles == null || loggedInUserRoles.isEmpty()) {
+			return assignableRoles;
+		}
+
+		if (loggedInUserRoles.contains(UserRole.ADMIN)) {
+			return assignableRoles;
+		}
+
+		int maxRank = -1;
+		for (UserRole role : loggedInUserRoles) {
+			int rank = getRoleRank(role);
+			if (rank > maxRank) {
+				maxRank = rank;
+			}
+		}
+
+		final int userRank = maxRank;
+
+		assignableRoles.removeIf(targetRole -> {
+			if (targetRole == UserRole.ADMIN) {
+				return true; 
+			}
+			
+			if (targetRole == UserRole.PUBLISH_USER || targetRole == UserRole.EDITOR_USER) {
+	            return true;
+	        }
+			
+			int targetRank = getRoleRank(targetRole);
+			
+			return targetRank > userRank; 
 		});
 
 		return assignableRoles;

@@ -1313,6 +1313,10 @@ public class UserForm extends FormLayout {
 			if (targetRole == UserRole.ADMIN) {
 				return true; // Non-Admins cannot assign the Admin role
 			}
+			
+			if (targetRole == UserRole.PUBLISH_USER || targetRole == UserRole.EDITOR_USER) {
+	            return true;
+	        }
 
 			int targetRank = getRoleRank(targetRole);
 
