@@ -198,7 +198,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// any time you make changes to your database objects, you may have to increase the database version
 
 
-	public static final int DATABASE_VERSION = 359;
+	public static final int DATABASE_VERSION = 361;
 
 	private static DatabaseHelper instance = null;
 
@@ -3520,6 +3520,31 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 				case 358:
 					currentVersion = 358;
 					TableUtils.createTableIfNotExists(connectionSource, Document.class);
+
+				case 359:
+
+					currentVersion = 359;
+					getDao(CampaignFormData.class).executeRaw("ALTER TABLE campaignformdata add column isvalidated boolean default false;");
+
+				case 360:
+
+					currentVersion = 360;
+					getDao(CampaignFormMeta.class).executeRaw(
+							"ALTER TABLE campaignFormMeta ADD COLUMN geographylevel TEXT"
+					);
+
+					getDao(CampaignFormMeta.class).executeRaw(
+							"UPDATE campaignFormMeta " +
+									"SET geographylevel = CASE " +
+									"WHEN districtentry = 1 THEN 'DISTRICT' " +
+									"WHEN districtentry = 0 THEN 'CLUSTER' " +
+									"END"
+					);
+
+					getDao(CampaignFormMeta.class).executeRaw(
+							"ALTER TABLE campaignFormMeta DROP COLUMN districtentry"
+					);
+
 					break;
 
 				default:
